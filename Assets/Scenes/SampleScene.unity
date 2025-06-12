@@ -631,8 +631,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08db27af6eee1694bb357f442c5970b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GrowthSpeed: 0.1
-  GrowthCost: 0.1
+  GrowthSpeed: 0.441
+  FastestInitialGrowth: 0.0001
+  GrowthDecaySpeed: 0.1
+  InitialGrowthCost: 1
+  GrowthCostFactor: 0.5
+  GrowthCost: 0
 --- !u!114 &845210332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -647,9 +651,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Health: 100
   Hydration: 100
+  HydrationProduction: 0
+  WaterAvailable: 0
   Energy: 0
   EnergyProduction: 0
   MaxHeight: 10
+  RootRadius: 0
+  Genes:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
