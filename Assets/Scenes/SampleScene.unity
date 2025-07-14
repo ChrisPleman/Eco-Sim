@@ -140,7 +140,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &120480303
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -317,7 +317,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!135 &133645830
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -801,6 +801,58 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &678962140
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 678962142}
+  - component: {fileID: 678962141}
+  m_Layer: 0
+  m_Name: TerrainGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &678962141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 678962140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d15345eedf8242b4382aa5941f0a25fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TerrainTypes:
+  - {fileID: 2418705014454798619, guid: 76862079b404d934498d1bda50d2ccc8, type: 3}
+  - {fileID: 2418705014454798619, guid: b3012dfcee886064383b21d357d8d965, type: 3}
+  - {fileID: 2418705014454798619, guid: 26935b7ae3eccea42b5b7996bf2949a5, type: 3}
+  - {fileID: 2418705014454798619, guid: c77ed1d964732114b8fe824b137175dc, type: 3}
+  GridSize:
+  - 4
+  - 4
+--- !u!4 &678962142
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 678962140}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -946,10 +998,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08db27af6eee1694bb357f442c5970b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GrowthSpeed: 0.441
-  FastestInitialGrowth: 0.0001
-  GrowthDecaySpeed: 0.1
-  InitialGrowthCost: 1
+  GrowthSpeed: 0.1
   GrowthCostFactor: 0.5
   GrowthCost: 0
 --- !u!114 &845210332
@@ -969,7 +1018,8 @@ MonoBehaviour:
   HydrationProduction: 0
   WaterAvailable: 0
   Energy: 0
-  EnergyProduction: 0
+  BaseEnergyProduction: 0
+  CurrentEnergyProduction: 0
   MaxHeight: 10
   RootRadius: 0
   Genes:
@@ -987,3 +1037,4 @@ SceneRoots:
   - {fileID: 845210326}
   - {fileID: 120480308}
   - {fileID: 133645833}
+  - {fileID: 678962142}

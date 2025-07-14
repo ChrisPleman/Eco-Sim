@@ -15,7 +15,8 @@ public class Trees : MonoBehaviour, IGenetic
     // Makes sense that this shouldn't be capped at a 100, as larger trees should have more energy
     public float Energy;
     // This should eventually be dependent on size, tree types, random genes, health/disease(?)
-    public float EnergyProduction;
+    public float BaseEnergyProduction;
+    public float CurrentEnergyProduction;
 
     [Header("TBD")]
     // todo: This should be controlled by a gene --> So maybe this itself could be a gene type
@@ -33,7 +34,7 @@ public class Trees : MonoBehaviour, IGenetic
     {
         // Technically we'll probably need to start with some energy & a small amount of energy production
         Energy = 10f;
-        EnergyProduction = .1f;
+        BaseEnergyProduction = .1f;
     }
 
     void Start()
@@ -46,11 +47,17 @@ public class Trees : MonoBehaviour, IGenetic
         PhotoSynthesis();
         // todo: I'll need a way to make sure that drinking is dependent on proximity to water
         Drink();
+        UpdateCurrentEnergyProductionWithScale();
     }
 
     private void PhotoSynthesis()
     {
-        Energy += Time.deltaTime * EnergyProduction;
+        Energy += Time.deltaTime * CurrentEnergyProduction;
+    }
+
+    private void UpdateCurrentEnergyProductionWithScale()
+    {
+        CurrentEnergyProduction =  BaseEnergyProduction * transform.localScale.x;
     }
 
     private void SenseWater()

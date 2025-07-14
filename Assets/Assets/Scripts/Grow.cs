@@ -8,16 +8,25 @@ public class Grow : MonoBehaviour
     [Range(0f, 1f)]
     // todo: Probably should be inheritable traits as well
     public float GrowthSpeed;
-    public float FastestInitialGrowth;
-    public float GrowthDecaySpeed;
+    // ! Deprecating these at the moment
+    // public float FastestInitialGrowth;
+    // public float GrowthDecaySpeed;
     [Header("Cost of Growing")]
     // todo: These two should likely be inheritable traits
-    public float InitialGrowthCost;
+    // ! Deprecating this for now
+    // public float InitialGrowthCost;
     public float GrowthCostFactor;
     [Tooltip("Energy units per second it costs to grow.")]
     // todo: More than just energy in the future
     // todo: This should increase as the object grows
     public float GrowthCost;
+
+    // We need to account for trees that begin growing after time zero
+    private float TimeBorn;
+    // We need a way to control the 'timeAlive' variable to account for periods of lack of growth
+    // Essentially the scaling jumps because it's using Time.time, when it should pause when not growing
+    private float TimeGrowing;
+
 
 
 
@@ -31,6 +40,8 @@ public class Grow : MonoBehaviour
     {
         // There is some initial cost
         UpdateGrowthCost();
+        TimeBorn = Time.time;
+        TimeGrowing = 0f;
     }
 
     void Start()
@@ -44,8 +55,7 @@ public class Grow : MonoBehaviour
         // We need at least as much as it costs to grow, well, to grow
         if (Tree.Energy > GrowthCost)
         {
-            Scale += DecayingGrowth();
-            SetHeight(Scale, Tree.MaxHeight);
+            SetHeight(Tree.MaxHeight, GrowthSpeed);
             Tree.Energy -= Time.deltaTime * GrowthCost;
             UpdateGrowthCost();
         }
@@ -54,21 +64,24 @@ public class Grow : MonoBehaviour
     // todo: In this end this will cost several resources: energy, water, other(?)
     private void UpdateGrowthCost()
     {
-        GrowthCost = InitialGrowthCost * GrowthCostFactor * transform.localScale.x;
+        GrowthCost = transform.localScale.x;
     }
 
-    private void SetHeight(float scale, float cap)
+    private void SetHeight(float cap, float speed)
     {
-        Vector3 scaleVector = UniformVector3(Mathf.Min(scale, cap));
+        TimeGrowing += Time.deltaTime;
+        float currScale = SigmoidGrowth(cap, speed, TimeGrowing);
+        Vector3 scaleVector = UniformVector3(currScale);
         transform.localScale = scaleVector;
     }
 
-    private float DecayingGrowth()
+    private float SigmoidGrowth(float cap, float speed, float timeAlive)
     {
-        // decaySpeed should be between 0 and 1, where the closer to zero you get, the slower it takes to decay
-        // fastestInitialGrowth is how fast we want the object to increase in scale at the onset
-        // ! Right now, we are just passing in single deltaTimes, when this should be a cumulative of time growing
-        return FastestInitialGrowth / Mathf.Pow(1 + GrowthDecaySpeed, Time.deltaTime);
+        // The growth will follow the sigmoid function, but will be capped at a certain height and speed
+
+        // alpha ensures that the initial scale will always be 1 regardless of the height cap passed
+        float alpha = cap - 1;
+        return cap / (1 + alpha * Mathf.Exp(-speed * timeAlive));
     }
 
     private Vector3 UniformVector3(float val)
