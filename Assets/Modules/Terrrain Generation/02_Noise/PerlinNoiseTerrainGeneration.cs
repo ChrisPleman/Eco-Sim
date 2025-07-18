@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class PerlinNoiseTerrainGeneration : MonoBehaviour
 {
@@ -14,8 +12,17 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
 
     public GameObject Tile;
 
-    [Range(.1f, 1f)]
-    public float TileSize;
+    public enum TilesResolution
+    {
+        one = 1,
+        two = 2,
+        four = 4,
+        five = 5,
+        eight = 8,
+        ten = 10
+    }
+    public TilesResolution TilesPerMeter;
+    private float TileSize;
 
     // public float SeaLevel;
 
@@ -23,6 +30,8 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
 
     [Range(.1f, 5f)]
     public float Zoom;
+    [Range(1,5)]
+    public int ZoomPrecision;
 
     [Header("Terrain Coloration")]
     public Color DebugColor;
@@ -32,6 +41,8 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
 
     public List<Color> TerrainColors;
     public float[] TerrainColorHeights;
+    private Color[] Gradient;
+    private int NumColorsInGradient;
 
 
     // * Private variables
@@ -46,31 +57,26 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
 
     void Awake()
     {
+        // * Tile Size
+        TileSize = 1 / (float)TilesPerMeter;
+
+        // * Creating an empty list for the tiles to be generated
         Tiles = new List<GameObject>();
-
-        // * Adjust the TileSize to ensure it can evenly fit into 1
-        List<float> validTileSizes = new List<float> { .1f, .125f, .25f, .5f, 1f };
-        float minDistance = 1f;
-        float closestTileSize = 0;
-        for (int i = 0; i < validTileSizes.Count; i++)
-        {
-            float currDistance = Mathf.Abs(TileSize - validTileSizes[i]);
-            if (currDistance < minDistance)
-            {
-                minDistance = currDistance;
-                closestTileSize = validTileSizes[i];
-            }
-        }
-
-        TileSize = closestTileSize;
 
         // ! Doing this here permanently changes the scale of the prefab. If I want to change each individual one, I'd have to change it after instantiating (Probably..)
         Tile.transform.localScale = new Vector3(TileSize, .1f, TileSize);
 
-        // I want round to the thousands place
-        float precision = Mathf.Pow(10f, 3f);
-        // We are dividing by Zoom, because we want to invert the behavior such that larger Zoom values "zoom in" on the texture, and vice versa
-        TextureScale = Mathf.Round(precision / Zoom) / precision;
+        // * Texture Scale
+        SetTextureZoom(ZoomPrecision);
+
+        // * Custom Color Gradient
+        NumColorsInGradient = 100;
+        Gradient = GenerateCustomGradient(TerrainColors, TerrainColorHeights, NumColorsInGradient);
+
+        // foreach (Color color in Gradient)
+        // {
+        //     Debug.Log(color);
+        // }
 
         currTerrainColors = CopyColorsList();
         currTerrainHeights = CopyHeightArray();
@@ -90,6 +96,8 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         // If the terrain colors have changed, then we need to update the colors
         if (!ListElementsAreEqual(TerrainColors, currTerrainColors) && Time.time - lastTimeColorChanged > 1f)
         {
+            Gradient = GenerateCustomGradient(TerrainColors, TerrainColorHeights, NumColorsInGradient);
+
             UpdateTerrainColor();
 
             lastTimeColorChanged = Time.time;
@@ -121,7 +129,7 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
             float tileHeight = tile.GetComponent<PerlinNoiseTile>().Height;
 
             // Update the tile color
-            tile.GetComponent<Renderer>().material.color = CustomGradient(tileHeight);            
+            tile.GetComponent<Renderer>().material.color = CustomGradient(tileHeight);
         }
     }
 
@@ -139,7 +147,7 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
             }
         }
 
-        Debug.Log($"Number of operations completed: {counter}");
+        Debug.Log($"Number of tile operations completed: {counter}");
     }
 
     private List<Color> CopyColorsList()
@@ -217,39 +225,61 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         // Update the height value of the tile
         newTile.GetComponent<PerlinNoiseTile>().Height = randomHeightValue;
 
-        // // Setting everything below sea level to 0:
-        // if (randomHeightValue <= SeaLevel)
-        // {
-        //     randomHeightValue = 0f;
-        // }
-        // Debug.Log($"With Zoom set as {TextureScale} and input to the noise function as ({x * TextureScale},{z * TextureScale}), the color at pixel ({x},{z}) is {randomHeightValue}");
-        newTileMaterial.color = CustomGradient(randomHeightValue);
+        newTileMaterial.color = GetColorFromGradient(Gradient, randomHeightValue);
 
         // Save the tile
         Tiles.Add(newTile);
     }
 
+    private Color GetColorFromGradient(Color[] gradient, float heightValue)
+    {
+        // This will help us to convert the heightValue (float) to an index (int)
+        int precision = gradient.Length;
 
-    // private void UpdateTileColor()
-    // {
-    //     // int index = (int)(x * Height / TileSize * TileSize + z / TileSize);
-    //     // Debug.Log($"x is {x}");
-    //     // Debug.Log($"z is {z}");
-    //     // Debug.Log($"Changing index: {index}");
+        int colorIndex = (int)(heightValue * precision);
 
-    //     foreach (GameObject tile in Tiles)
-    //     {
-    //         // Get the tile's height
-    //         float tileHeight = tile.GetComponent<PerlinNoiseTile>().Height;
+        return gradient[colorIndex];
+    }
 
-    //         // Update the tile color
-    //         tile.GetComponent<Renderer>().material.color = CustomGradient(tileHeight);            
-    //     }
-    // }
+    private Color[] GenerateCustomGradient(List<Color> colors, float[] colorHeights, int numColors)
+    {
+        // This will house the color gradient
+        Color[] gradient = new Color[numColors];
 
+        for (int i = 0; i < numColors; i++)
+        {
+            // The height value is the inverse of the current index
+            float heightValue = (float)i / numColors;
 
+            // We need to see which colors to choose
+            for (int j = 1; j < colorHeights.Length; j++)
+            {
+                // We are within the two color values to create a sub-gradient
+                if (heightValue <= colorHeights[j])
+                {
+                    try
+                    {
+                        gradient[i] = Color.Lerp(
+                        colors[j - 1],
+                        colors[j],
+                        // Normalized distance along the desired sub-gradient
+                        (heightValue - colorHeights[j - 1]) / (colorHeights[j] - colorHeights[j - 1])
+                    );
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.Log($"The current value of 'i' is {i}");
+                        throw e;
+                    }
 
+                    // We don't need to keep checking
+                    break;
+                }
+            }
+        }
 
+        return gradient;
+    }
 
     private Color CustomGradient(float heightValue)
     {
@@ -277,32 +307,15 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         // Can help to debug
         return DebugColor;
     }
-    
 
 
 
-    // private Color CustomGradient(float heightValue)
-    // {
-    //     // Get the next color index
-    //     int rightColorIndex = (int)Math.Ceiling(heightValue * Colors.Count);
-
-    //     if (rightColorIndex == Colors.Count)
-    //     {
-    //         rightColorIndex -= 1;
-    //     }
-
-    //     int leftColorIndex = rightColorIndex - 1;
-    //     try
-    //     {
-    //         return Color.Lerp(Colors[leftColorIndex], Colors[rightColorIndex], heightValue);
-    //     }
-    //     catch (System.Exception e)
-    //     {
-    //         Debug.Log(heightValue);
-    //         Debug.Log(Math.Ceiling(heightValue * Colors.Count));
-    //         Debug.Log((int)Math.Ceiling(heightValue * Colors.Count));
-    //         Debug.Log($"{leftColorIndex}, {rightColorIndex}");
-    //         throw e;
-    //     }
-    // }
+    // Adjust the scale of the perlin noise texture and its precision
+    private void SetTextureZoom(int precision)
+    {
+        // I want round to the thousands place
+        float ZoomPrecision = Mathf.Pow(10f, precision);
+        // We are dividing by Zoom, because we want to invert the behavior such that larger Zoom values "zoom in" on the texture, and vice versa
+        TextureScale = Mathf.Round(ZoomPrecision / Zoom) / ZoomPrecision;
+    }
 }

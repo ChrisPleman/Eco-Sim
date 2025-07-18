@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1566687840044743991
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 399266840610412756}
+  - component: {fileID: 511429679251132548}
+  m_Layer: 0
+  m_Name: TerrainGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &399266840610412756
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1566687840044743991}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &511429679251132548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1566687840044743991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51da11089211c7b4ba543b35588bce02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Dimensions: 5
+  TileObjects:
+  - {fileID: 2951177566304094837, guid: 164e4a3269298a74a92b35ca36f65833, type: 3}
+  - {fileID: -7044950216239195654, guid: ff7f2fafdfcf7ef48b875aee39c9656d, type: 3}
+  - {fileID: -6844631256403046130, guid: 87ce179a71db0be4d8da9a73de7fa38c, type: 3}
+  - {fileID: -3285629390379978927, guid: 377a24968bb2c4447918dacf7586fe6e, type: 3}
+  - {fileID: -8848926097574810643, guid: b2caa49e0af3b694dbb6b5263e39ae7b, type: 3}
+  - {fileID: -872076260383802837, guid: 31d51d7fa12673d4697bc39d8d1ddf0f, type: 3}
+  - {fileID: 3776554193486619062, guid: 492da2d4976337e4b990eabfc9dea8ca, type: 3}
+  - {fileID: -8981775063853854083, guid: fd8b77be9a014f549a3ee488554c0e71, type: 3}
+  - {fileID: -6623677190869239550, guid: 43671a8edb2edf441a20ff1b52fada05, type: 3}
+  - {fileID: -3980448492522082594, guid: a63a7745d3bf09d43a997a61302ca715, type: 3}
+  GridComponents: []
+  TerrainCell: {fileID: 482802244375897577, guid: a9211275a446a6b4b8881bc7c2fff05a, type: 3}
