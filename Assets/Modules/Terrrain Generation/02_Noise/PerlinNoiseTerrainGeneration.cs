@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class PerlinNoiseTerrainGeneration : MonoBehaviour
@@ -30,8 +31,24 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
 
     [Range(.1f, 5f)]
     public float Zoom;
-    [Range(1,5)]
+    [Range(1, 5)]
     public int ZoomPrecision;
+    public enum NoiseLayers
+    {
+        zero = 0,
+        one = 1,
+        two = 2,
+        three = 3,
+        four = 4,
+        five = 5,
+        six = 6,
+        seven = 7,
+        eight = 8,
+        nine = 9,
+        ten = 10
+    }
+
+    public NoiseLayers AdditionalNoiseLayers;
 
     [Header("Terrain Coloration")]
     public Color DebugColor;
@@ -219,13 +236,56 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         // The input needs to be float values, since the PerlinNoise function repeats at integer values
         float randomHeightValue = Mathf.PerlinNoise(TextureScale * x / Width, TextureScale * z / Height);
 
+        for (int i = 0; i < (int)AdditionalNoiseLayers; i++)
+        {
+            float textureScaleFactor = Mathf.Pow(2f * (i+1) + 1f, -2f - i);
+            float factor = Mathf.Pow(.5f, i + 2);
+            float noiseValue = Mathf.PerlinNoise(
+                textureScaleFactor * TextureScale * x,
+                textureScaleFactor * TextureScale * z
+            ) - .5f;
+            // Debug.Log($"2f * i + 1f = {2f * i + 1f}, -1f - i = {-1f - i}, and Mathf.Pow(2f * i + 1f, -1f - i) = {Mathf.Pow(2f * i + 1f, -1f - i)}");
+            // Debug.Log($"x is {x}, textureScaleFactor is {textureScaleFactor}, TextureScale is {TextureScale}, and z is {z}");
+            // Debug.Log($"x arg is set to {textureScaleFactor * TextureScale * x}. z arg is set to {textureScaleFactor * TextureScale * z}.");
+            // Debug.Log($"The textureScaleFactor is {textureScaleFactor}, the factor is {factor}, and the noiseValue is {noiseValue}");
+            randomHeightValue += noiseValue * factor;
+
+        }
+
+        // * Clamping range
+        // ? The more appropriate approach would likely be to see the texture ahead of time, and then normalizing all of the values
         // Clamp to max of 1
         randomHeightValue = Mathf.Min(1f, randomHeightValue);
+        // Clamp to a min of 0
+        randomHeightValue = Mathf.Max(0f, randomHeightValue);
 
         // Update the height value of the tile
-        newTile.GetComponent<PerlinNoiseTile>().Height = randomHeightValue;
+        PerlinNoiseTile newTileClass = newTile.GetComponent<PerlinNoiseTile>();
+        newTileClass.Height = randomHeightValue;
 
         newTileMaterial.color = GetColorFromGradient(Gradient, randomHeightValue);
+
+        // Assign a type to the tile; start at second element to be able to compare previous values
+        for (int i = 1; i < TerrainColorHeights.Length; i++)
+        {
+            // Between arr[i-1] and arr[i]
+            if (randomHeightValue <= TerrainColorHeights[i])
+            {
+                float heightBand = TerrainColorHeights[i] - TerrainColorHeights[i - 1];
+                // If below halfway point between curr and previous color, then it's the previous terrain type
+                if (randomHeightValue < TerrainColorHeights[i] - heightBand / 2f)
+                {
+                    newTileClass.TileType = (TypesOfTile)(i - 1);
+                    break;
+                }
+                else
+                {
+                    newTileClass.TileType = (TypesOfTile)i;
+                    break;
+                }
+
+            }
+        }
 
         // Save the tile
         Tiles.Add(newTile);
@@ -237,6 +297,12 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         int precision = gradient.Length;
 
         int colorIndex = (int)(heightValue * precision);
+
+        // Ensure that we don't trigger an IndexOutOfRange error
+        if (colorIndex == precision)
+        {
+            colorIndex -= 1;
+        }
 
         return gradient[colorIndex];
     }
@@ -317,5 +383,10 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         float ZoomPrecision = Mathf.Pow(10f, precision);
         // We are dividing by Zoom, because we want to invert the behavior such that larger Zoom values "zoom in" on the texture, and vice versa
         TextureScale = Mathf.Round(ZoomPrecision / Zoom) / ZoomPrecision;
+    }
+
+    private void TBD()
+    {
+        
     }
 }
