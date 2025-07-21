@@ -87,7 +87,7 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
 
         // * Custom Color Gradient
         NumColorsInGradient = 100;
-        Gradient = GenerateCustomGradient(TerrainColors, TerrainColorHeights, NumColorsInGradient);
+        Gradient = CustomGradient.GenerateCustomGradient(TerrainColors, TerrainColorHeights, NumColorsInGradient);
 
         // foreach (Color color in Gradient)
         // {
@@ -112,7 +112,7 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         // If the terrain colors have changed, then we need to update the colors
         if (!ListElementsAreEqual(TerrainColors, currTerrainColors) && Time.time - lastTimeColorChanged > 1f)
         {
-            Gradient = GenerateCustomGradient(TerrainColors, TerrainColorHeights, NumColorsInGradient);
+            Gradient = CustomGradient.GenerateCustomGradient(TerrainColors, TerrainColorHeights, NumColorsInGradient);
 
             UpdateTerrainColor();
 
@@ -145,7 +145,7 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
             float tileHeight = tile.GetComponent<PerlinNoiseTile>().Height;
 
             // Update the tile color
-            tile.GetComponent<Renderer>().material.color = CustomGradient(tileHeight);
+            tile.GetComponent<Renderer>().material.color = CustomGradient.GetColorFromGradient(Gradient, tileHeight);
         }
     }
 
@@ -154,9 +154,9 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         int counter = 0;
         // Since our tiles will be squares that we know were originally set to be 1 x 1 x 1 cubes, we can use the TileSize variable 
         // to increment through the loop
-        for (float x = 0; x < Width; x += TileSize)
+        for (float x = 0; x < Height; x += TileSize)
         {
-            for (float z = 0; z < Height; z += TileSize)
+            for (float z = 0; z < Width; z += TileSize)
             {
                 operation(x, z);
                 counter++;
@@ -262,7 +262,7 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         PerlinNoiseTile newTileClass = newTile.GetComponent<PerlinNoiseTile>();
         newTileClass.Height = randomHeightValue;
 
-        newTileMaterial.color = GetColorFromGradient(Gradient, randomHeightValue);
+        newTileMaterial.color = CustomGradient.GetColorFromGradient(Gradient, randomHeightValue);
 
         // Assign a type to the tile; start at second element to be able to compare previous values
         for (int i = 1; i < TerrainColorHeights.Length; i++)
@@ -289,91 +289,6 @@ public class PerlinNoiseTerrainGeneration : MonoBehaviour
         // Save the tile
         Tiles.Add(newTile);
     }
-
-    private Color GetColorFromGradient(Color[] gradient, float heightValue)
-    {
-        // This will help us to convert the heightValue (float) to an index (int)
-        int precision = gradient.Length;
-
-        int colorIndex = (int)(heightValue * precision);
-
-        // Ensure that we don't trigger an IndexOutOfRange error
-        if (colorIndex == precision)
-        {
-            colorIndex -= 1;
-        }
-
-        return gradient[colorIndex];
-    }
-
-    private Color[] GenerateCustomGradient(List<Color> colors, float[] colorHeights, int numColors)
-    {
-        // This will house the color gradient
-        Color[] gradient = new Color[numColors];
-
-        for (int i = 0; i < numColors; i++)
-        {
-            // The height value is the inverse of the current index
-            float heightValue = (float)i / numColors;
-
-            // We need to see which colors to choose
-            for (int j = 1; j < colorHeights.Length; j++)
-            {
-                // We are within the two color values to create a sub-gradient
-                if (heightValue <= colorHeights[j])
-                {
-                    try
-                    {
-                        gradient[i] = Color.Lerp(
-                        colors[j - 1],
-                        colors[j],
-                        // Normalized distance along the desired sub-gradient
-                        (heightValue - colorHeights[j - 1]) / (colorHeights[j] - colorHeights[j - 1])
-                    );
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.Log($"The current value of 'i' is {i}");
-                        throw e;
-                    }
-
-                    // We don't need to keep checking
-                    break;
-                }
-            }
-        }
-
-        return gradient;
-    }
-
-    private Color CustomGradient(float heightValue)
-    {
-        // Control how smoothly colors change
-        heightValue = Mathf.Round(Mathf.Pow(10, TextureGranularity) * heightValue) / Mathf.Pow(10, TextureGranularity);
-
-        // Start from the second color, and if in right band, compare to previous
-        for (int i = 1; i < TerrainColors.Count; i++)
-        {
-            Color terrainColor = TerrainColors[i];
-            float terrainColorHeight = TerrainColorHeights[i];
-
-            if (heightValue <= terrainColorHeight)
-            {
-                return Color.Lerp(
-                    TerrainColors[i - 1],
-                    terrainColor,
-                    // We are finding how far along we are WITHIN the current color range
-                    (heightValue - TerrainColorHeights[i - 1]) / (terrainColorHeight - TerrainColorHeights[i - 1])
-                );
-            }
-        }
-
-        Debug.Log(heightValue);
-        // Can help to debug
-        return DebugColor;
-    }
-
-
 
     // Adjust the scale of the perlin noise texture and its precision
     private void SetTextureZoom(int precision)
