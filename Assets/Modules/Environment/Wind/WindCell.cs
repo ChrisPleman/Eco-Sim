@@ -25,7 +25,7 @@ public class WindCell : MonoBehaviour
 
         Rigidbody otherObjectRB = other.gameObject.GetComponent<Rigidbody>();
 
-        // ! For whaterver reason, it seems like the ball that's dropped into a cell only ever moves one way. Unsure as to why that is atm.
-        otherObjectRB.AddForce(transform.forward * Random.Range(.1f, 1f), ForceMode.Impulse);
+        // ! For whaterver reason, it seems like the ball that's dropped into a cell only ever moves one way. Unsure as to why that is atm. 
+        otherObjectRB.AddForce(WindVector * Random.Range(.1f, 1f), ForceMode.Impulse);
     }
 }
